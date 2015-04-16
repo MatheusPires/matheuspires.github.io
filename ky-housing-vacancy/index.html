@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Task J starter template</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="simple_statistics.js"></script>
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+        header {
+            padding: 6px 10%;
+        }
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+        #map {
+            width: 960px;
+            height: 540px;
+            margin: 10px auto;
+            background: whitesmoke;
+            border: 2px solid #dddedf;
+        }
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+       
+        .legend {
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .legend h3 {
+            font-size: 1.1em;
+            font-weight: normal;
+            color: #001323;
+            margin: 0;
+        }
+        .legend li {
+            list-style-type: none;
+            height: 22px;
+        }
+        .legend span {
+            width: 20px;
+            height: 20px;
+            float: left;
+            margin-right: 10px;
+        }
+        .leaflet-popup-content {
+            max-width: 160px;   
+        }
+        .info {
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            text-align: right;   
+        }
+        .info h3 {
+            margin: 0;   
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Matheus Caputo Pires</h1>
+        <h2>Mapping the vacancy of dweeling units at Kentucky</h2>
+    </header>
+    
+    <div id='ui-controls'>
+     <label>Choose a data attribute:<br>
+        <select name="vacant">
+            <option value="VACANT_REN" selected>vacant units rented (not ocupied)</option>
+            <option value="VACANT_FO2">vacant units for sale</option> 
+            <option value="VACANT_FOR">for rent</option>
+            <option value="VACANT_SOL">vacant units sole (not occupied)</option>
+            <option value="VACANT_SEA">vacant seasonally ocupied or for recreational use</option>
+            <option value="VACANT_MIG">vacant used for migratory workers</option>
+            <option value="VACANT_OTH">vacant units, other</option>
+        </select>
+        </label>
+    </div>
+    
+    <div id='map'></div>
+
+    <footer>
+        <p>Map authored by Matheus Caputo Pires</p>
+        <p>The map has a user interface that allows the user to define which atribute is going to be mapped.</p>
+    </footer>
+
+    <script>
+        
+        var labels = {
+            "VACANT": "vacant units",
+            "VACANT_REN": "% vacant housing units rented but not ocupied",
+            "VACANT_FO2": "% vacant housing units for sale",
+            "VACANT_FOR": "% vacant housing units for rent",
+            "VACANT_SOL": "% vacant units sole (not occupied)",
+            "VACANT_SEA": "% vacant units used seasonally or for recreational use only",
+            "VACANT_MIG": "% vacant units used for migratory workers",
+            "VACANT_OTH": "% vacant units for other reasons"
+        }
+        //labels is a global variable that refers a meaningfull phrase to a variable used from the json file.
+        
+        var options = {
+            center: [38.2, -85.8],
+            zoom: 7.4,
+            minZoom: 7.4,
+            maxZoom: 7.4,
+            dragging: false,
+            zoomControl: false
+        }
+        //options is another variable, but this one defines de design of the map, the fixed scale and size and thet it is not draggable
+        var map = L.map('map', options);
+        //map uses a leaflet object and passes the options created right above to define de area where the map will be created.
+                
+        var dataLayer,
+            //This is another global variable to be defined right bellow.
+            attribute = "VACANT_OTH",
+            //atribute to me mapped and will be changed later multiple times by the user.
+            norm = "VACANT";
+        //norm defines the value by which the othe chosen will be normalyzed.
+        
+        $.getJSON("ky_counties_housing.json", function(data) {
+            dataLayer = L.geoJson(data, {
+                 style: function(feature) {
+                    return {
+                            color: '#dddddd',
+                            weight: 2,
+                            fillOpacity: 1,
+                            fillColor: '#1f78b4'
+                        };
+                }          
+            }).addTo(map);
+            drawInfo();
+            drawMap();
+            drawLegend();
+            ui();
+            changeColor();
+        });
+        //This uses a JQuery method to defines the layer on the variable dataLayer created with the data from the .json file, and calls all the other functions that will be defined bellow in the order that they are supose to be called.
+
+        $('select[name="vacant"]').change(function() {
+            attribute = $(this).val();
+            drawMap();
+        });
+        //This JQuery method redefine the attribute based on the user`s choice, and then redraw the map.
+        
+        function changeColor() {
+            dataLayer.eachLayer(function(layer){
+                layer.on('mouseover', function() {
+                    layer.setStyle({
+                        color: '#d8ff00'
+                    });
+                });
+                dataLayer.on('mouseout', function() {
+                    layer.setStyle({
+                        color: '#dddddd'
+                    });
+                });
+            });
+        }
+        //end of changeColor, a function that change the color of the county stroke when you hover the mouse over it.
+        
+        function drawMap() {
+            var breaks = getClassBreaks();
+            dataLayer.eachLayer(function(layer) {
+                var props = layer.feature.properties;
+                layer.setStyle({
+                    fillColor: getColor(props[attribute]/
+                                        props[norm], breaks)
+                });
+                layer.bindPopup("<b>"+props["NAME"]+" County</b></br>" +
+                                labels[attribute] + ": " +                  ((props[attribute]/props[norm])*100).toLocaleString());
+                layer.on('mouseover', function() {
+                    updateInfo(this);
+                });
+            });
+            updateLegend(breaks);
+        }
+        //end of drawMap, a function that uses the breaks and draw on the map the right colors based on the value of the attribute/norm and where it is found on the breaks (that will refer a color to the value.
+        
+        function getClassBreaks() {
+            var values = [];
+            dataLayer.eachLayer(function(layer) {
+                var value = layer.feature.properties[attribute]/layer.feature.properties[norm];
+                values.push(value);   
+            }); 
+            var breaks = ss.jenks(values, 5);
+            return breaks;
+        }
+        //end of getClassBreaks, a function that uses the value of the atribute chosen by the user and normalyze it with the value of the norm already defined, and return break values for color affordance to each county. 
+        
+        //getColor function 
+        function getColor(d, breaks) {
+            if(d <= breaks[1]) {
+                return '#f1eef6';
+            } else if(d <= breaks[2]) {
+                return '#bdc9e1';
+            } else if(d <= breaks[3]) {
+                return '#74a9cf';
+            } else if(d <= breaks[4]) {
+                return '#2b8cbe'
+            } else if(d <= breaks[5]) {
+                return '#045a8d'
+            }
+        }
+        //end of getColor, a function that provide a color for each interval of the breaks array, and is used on the other functions to associate the color to the counties on the map.
+        
+        function drawLegend(breaks) {
+            var legend = L.control({position: 'topleft'});
+            legend.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'legend');
+                return div;
+            };
+            legend.addTo(map);
+        }
+        //end of drawLegend, a function that draws and position the legend on the map, but dont locate any information on it.
+        
+        function ui() {
+            var dataView = L.control({position: 'topleft'});
+            dataView.onAdd = function(map) {
+                var controls = L.DomUtil.get('ui-controls');
+                return controls;
+            }
+            dataView.addTo(map);
+        }
+        //end of ui, a function that add a User Interface element on the map and give the option of choosind the data to be displayed to the user, and to acomplish this it uses the id created outside of the script, with the values and their labes to be chosen by the user.
+        
+        function updateLegend(breaks) {
+            var legend = $('.legend').html("<h3>" + labels[attribute] + "</h3><ul>"); 
+            for (var i = 0; i < breaks.length-1; i++) {
+                var color = getColor(breaks[i + 1], breaks);
+                legend.append('<li><span style="background:' + color + '"></span> ' +
+                    (breaks[i]*100).toLocaleString() + ' &mdash; ' + 
+                    (breaks[i + 1]*100).toLocaleString() + '</li>');
+            }
+            legend.append("</ul>");
+        }
+        //end of updateLegend, a function that will build information to the legent, and place there the breaks in which the map is based to color the counties.
+        
+        function drawInfo() {
+            var info = L.control({position: 'topright'});
+            info.onAdd = function(map) {
+                var div = L.DomUtil.create('div', 'info');
+                return div;  
+            }
+            info.addTo(map);
+            dataLayer.on('mouseover', function() {
+                $(".info").show();
+            });
+            dataLayer.on('mouseout', function() {
+                $(".info").hide();    
+            });
+        }
+        //end of drawInfo, a function that position and draw the information panel on the map when the mouse is over the layer, and turn the info panel off when the mouse is ot of the layer.
+
+        function updateInfo(layer) {
+            var props = layer.feature.properties;
+            var html = "<h3>"+props['NAME']+" County</h3>"+
+                        "total # vacant units: <b>"+ props["VACANT"]+"</b><br>"+
+                        "# rented units but still vacant: <b>"+ props["VACANT_REN"]+"</b><br>"+
+                        "# vacant units for sale: <b>"+ props["VACANT_FO2"]+"</b><br>"+
+                        "# vacant units for rent: <b>"+ props["VACANT_FOR"]+"</b><br>"+
+                        "# vacant units sole but not ocupied: <b>"+ props["VACANT_SOL"]+"</b><br>"+
+                        "# vacant units used seasonally or for recreational use only: <b>"+ props["VACANT_SEA"]+"</b><br>"+
+                        "# vacant units used for migratory workers: <b>"+ props["VACANT_MIG"]+"</b><br>"+
+                        "# vacant units for other reasons: <b>"+ props["VACANT_OTH"]+"</b>";
+            $(".info").html(html);
+        }
+        //end of updateInfo, a function that updates the information on the info panel based on th county that the user is hovering the mouse over.
+
+    </script>
+    
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Geo404/709 Portfolio Example</title>
+
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" />
+<link href='http://fonts.googleapis.com/css?family=Imprima' rel='stylesheet' type='text/css'>
+
+<style>
+    body {  
+        background: #ebeaea;   
+        font-family: Imprima, sans-serif;
+    }
+    header { 
+        width: 100%;
+        min-width: 800px;
+        margin: 0 auto;
+        background: steelblue;
+        padding: 15px 0 20px;
+        }
+    h1 { 
+        font-family: Dosis, sans-serif;
+        color: #375671; 
+        width: 80%;
+        margin: 0 auto;
+        color: whitesmoke;
+    }
+    h2 { 
+        font-family: Dosis, sans-serif;
+        color: #375671;
+        width: 80%;
+        margin: 0 auto;
+        color: whitesmoke;
+    }
+    h3 {
+        font-family: Dosis, sans-serif;
+        color: #003d71
+    }
+    p { 
+        font-size: .9em; 
+        color: #375671; 
+    }
+    ul {
+        list-style-type: none; 
+        font-size: .9em; 
+        color: #375671; 
+        line-height: 1.6em;
+    }
+    a, a:visited {   
+        color: #003d71;
+    }
+    .project {
+        width: 80%;
+        min-width: 800px;
+        height: 100%;
+        margin: 35px auto;
+    }
+    .project:after{
+        content: "";
+        display: table;
+        clear: both; 
+    }
+    .project-image {
+        width: 388px;
+        height: 240px;
+        background: white;
+        float: left;
+        margin-right: 20px;
+        border: 2px solid #dddddd;
+    }
+</style>
+</head>
+
+<body>
+    <header>
+        <h1>Geo409 &ndash; 709: Advanced GIS</h1>
+        <h2>Web Mapping at the University of Kentucky</h2>
+        <h3>Matheus Caputo Pires, Surveying and Cartography Engineering Major</h3>
+    </header>
+        <section class="project">
+    <!--        First Map-->
+            <image src="Images/KY-Unemployment.png" alt="KY unemployment map" class="project-image">
+            <h3>Map of the unemployment at Kentucky</h3>
+            <p>Choroplath map showing the rate of unemployment in each county per year at the state of Kentucky</p>
+                <li>See the map: <a href="ky-unemployment/">KY unemployment rates: 2001 &ndash; 2013</a></li>
+                <li>Data Source: <a href="http://www.bls.gov/data/">Bureau of Labor Statistics</a></li>
+                <li>See the <a href="https://github.com/MatheusPires/MatheusCaputo.github.io/blob/master/index.html">code for this map hosted on GitHub</a></li>
+    <!--        Second Map-->
+            <image src="Images/us-powerplants.PNG" alt="us powerplants map" class="project-image">
+            <h3>Map of the Power Plants at the United States</h3>
+            <p>A map with proportional size dots for three types of energy sources on power plants at the United States.</p>
+                <li>See the map: <a href="us-powerplants/">US Power Plants</a></li>
+                <li>Data Source: <a href="http://www.bls.gov/data/">Bureau of Labor Statistics</a></li>
+                <li>See the <a href="https://github.com/MatheusPires/geo409/blob/master/map-3/index.html">code for this map hosted on GitHub</a></li>
+    <!--         Third Map-->
+            <image src="Images/ky-vacancy.PNG" alt="ky housing vacancy map" class="project-image">
+            <h3>Map of the vacancy of dwelling units at Kentucky</h3>
+            <p>A choropleth map of the type of vacancy of dwelling units, with a user interface that allows the user to switch the data.</p>
+                <li>See the map: <a href="ky-housing-vacancy/">KY Housing Vacancy</a></li>
+                <li>Data Source: <a href="http://www.bls.gov/data/">Bureau of Labor Statistics</a></li>
+                <li>See the <a href="https://github.com/MatheusPires/geo409/blob/master/task-j/index.html">code for this map hosted on GitHub</a></li>
+    <!--        Final Project-->
+
+    </section>
+    
+</body>
+</html>
