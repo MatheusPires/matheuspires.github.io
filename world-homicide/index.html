@@ -115,7 +115,7 @@
 <body>
     <h1>Map of the homicide counts in the most important city of a country:</h1>
     
-    <div id="ui-control">
+    <div id="ui-controls">
         <label><span class="min">2005</span><span class="max">2012</span>
         <input type="range" min="2005", max="2012", 
                 value="2005", step="1" class="year-slider"></input>
@@ -146,15 +146,16 @@
 
 // declare global variables
 
-        var countriesLayer,
-            year = 2005,
+        var countriesLayer = {},
+            attribute = 2005,
+            //The two attribute tables, one with the counts and one with the rate per 10000 people was an idea that I could not make work.
             dataCount = 'Countries_Count.csv',
             dataRate = 'Countries_Rate.csv';
         
 // AJAX requests to load data files
         $.getJSON("Countries_Boundaries.json", function(countries) {
             //function to bind the data on the csv to the JSON
-            Papa.parse(dataRate, {
+            Papa.parse(dataCount, {
                 download: true,
                 header: true,
                 complete: function(data) {
@@ -194,7 +195,6 @@
             drawInfo();
             createYearSlider();
             drawLegend();
-            ui();
             updateMap();
         }
         
@@ -204,9 +204,9 @@
             var breaks = getBreaks();
             countriesLayer.eachLayer(function(layer) {
                 layer.setStyle({
-                    fillColor: getColor(layer.feature.properties[year], breaks)
+                    fillColor: getColor(layer.feature.properties[attribute], breaks)
                 });
-                layer.bindPopup("<b>"+layer.feature.properties["country"]+" ("+layer.feature.properties["city"]+")</b><br>" + year + ": " + layer.feature.properties[year] + "");
+                layer.bindPopup("<b>"+layer.feature.properties["country"]+" ("+layer.feature.properties["city"]+")</b><br>" + attribute + ": " + layer.feature.properties[attribute] + "");
                 layer.on('mouseover', function() {
                     updateInfo(this);
                     $(".info").show();
@@ -226,10 +226,10 @@
             var values = [];
             var value;
             //Below is the code I introduced to fix the values problem.
-            //the last code was introducing all the values in the year into the array "values".
+            //the last code was introducing all the values in the attribute into the array "values".
             //this new code oly takes into consideration the different values, by testing if there is any similar value already existing in the "values" array.
             countriesLayer.eachLayer(function(layer) {
-                value = layer.feature.properties[year];
+                value = layer.feature.properties[attribute];
                 //"i" is a temporary boolean variable, used to test if the new value to be introduced into the "values" array already exists or not, Being set with false as a default.
                 var i = false;
                 //A for loop iterates through all the values already into the array.
@@ -293,7 +293,7 @@
 // function to update the legend
         
         function updateLegend(breaks) {
-            var legend = $('.legend').html("<h3>Counts per Country: " + year + "</h3><ul>"); 
+            var legend = $('.legend').html("<h3>Counts per Country: " + attribute + "</h3><ul>"); 
             for (var i = 0; i < breaks.length-1; i++) {
                 var color = getColor(breaks[i + 1], breaks);
                 legend.append('<li><span style="background:' + color + '"></span> ' +
@@ -305,8 +305,7 @@
 
 // function to create the range slider
         
-        function createYearSlider() {
-            var sliderControl = L.control({ position: 'bottomleft'} );
+        function createYearSlider() {            var sliderControl = L.control({ position: 'bottomleft'} );
             sliderControl.onAdd = function(map) {
                 var slider = L.DomUtil.get("ui-controls");
                     L.DomEvent.addListener(slider, 'mousedown', function(e) { 
@@ -316,7 +315,7 @@
             }
             sliderControl.addTo(map);
             $(".year-slider").on('input change', function() {
-                    year = $(this).val();
+                    attribute = $(this).val();
                     updateMap();
                 });
         }
@@ -325,10 +324,10 @@
     
         function drawInfo() {
             var info = L.control({position: 'topright'});
-            info.onAdd = function(map) {
-                var div = L.DomUtil.create('div', 'info');
-                return div;  
-            }
+                info.onAdd = function(map) {
+                    var div = L.DomUtil.create('div', 'info');
+                    return div;  
+                }
             info.addTo(map);
         }
         
@@ -340,17 +339,6 @@
             $(".info").html(html);
         }
         
-// function to create a UI element
-        
-//        function ui() {
-//            var dataView = L.control({position: 'topleft'});
-//            dataView.onAdd = function(map) {
-//                var controls = L.DomUtil.get('ui-controls');
-//                return controls;
-//            }
-//            dataView.addTo(map);
-//        }
-
     </script>
     
 </body>
